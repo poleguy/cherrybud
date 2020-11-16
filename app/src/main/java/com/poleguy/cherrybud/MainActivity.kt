@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.xmlpull.v1.XmlPullParserException
 import treebuilder.TreeBuilder
+import treebuilder.TreeNode
 import java.io.FileReader
 import java.io.IOException
 import java.io.InputStream
@@ -65,32 +66,88 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 
         sample_text.text = "blah"
 
+        val list = listOf("a","b","c")
+        populateTreeData(list)
+
+    }
+
+    fun populateTree() {
         // ExampleListTreeAdapter
 
         //创建后台数据：一棵树
         //创建组们，是root node，所有parent为null
         val groupNode1 = tree.addNode(null, "特别关心", R.layout.contacts_group_item)
-        val groupNode2 = tree.addNode(null, "我的好友", R.layout.contacts_group_item)
+        val groupNode2 = tree.addNode(null, "two 我的好友", R.layout.contacts_group_item)
         val groupNode3 = tree.addNode(null, "朋友", R.layout.contacts_group_item)
         val groupNode4 = tree.addNode(null, "家人", R.layout.contacts_group_item)
-        val groupNode5 = tree.addNode(null, "同学", R.layout.contacts_group_item)
+        val groupNode5 = tree.addNode(null, "five 同学", R.layout.contacts_group_item)
 
         //第二层
         var bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-        var contact = ExampleListTreeAdapter.ContactInfo(bitmap, "王二", "[在线]我是王二")
+        var contact = ExampleListTreeAdapter.ContactInfo(bitmap, "mno 王二", "[在线]我是王二")
         val contactNode1 = tree.addNode(groupNode2, contact, R.layout.contacts_contact_item)
-        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "王三", "[在线]我是王三")
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "jkl 王三", "[在线]我是王三")
         val contactNode2 = tree.addNode(groupNode5, contact, R.layout.contacts_contact_item)
         //再添加一个
         bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "王四", "[离线]我没有状态")
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "ghi 王四", "[离线]我没有状态")
         tree.addNode(groupNode2, contact, R.layout.contacts_contact_item)
-        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "王五", "[离线]我没有状态")
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "def 王五", "[离线]我没有状态")
         tree.addNode(groupNode5, contact, R.layout.contacts_contact_item)
 
         //第三层
         bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "东邪", "[离线]出来还价")
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "abc 东邪", "[离线]出来还价")
+        var n: ListTree.TreeNode = tree.addNode(contactNode1, contact, R.layout.contacts_contact_item)
+        n.isShowExpandIcon = false
+        //再添加一个
+        bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "李圆圆", "[离线]昨天出门没出去")
+        n = tree.addNode(contactNode1, contact, R.layout.contacts_contact_item)
+        n.isShowExpandIcon = false
+
+        adapter = ExampleListTreeAdapter(tree, this)
+        listView.layoutManager = LinearLayoutManager(this)
+        listView.setAdapter(adapter)
+
+    }
+
+    private fun populateTreeData(data1: List<String>) {
+        // ExampleListTreeAdapter
+
+        val data = listOf("string1", "string2", "string3")
+
+        val groupNodes = mutableListOf<ListTree.TreeNode>()
+        // loop through:
+        for (d in data) {
+            val node =  tree.addNode(null, d,R.layout.contacts_group_item)
+            groupNodes.add(node)
+        }
+
+        //创建后台数据：一棵树
+        //创建组们，是root node，所有parent为null
+        val groupNode1 = tree.addNode(null, "特别关心", R.layout.contacts_group_item)
+        val groupNode2 = groupNodes[1]
+        val groupNode3 = tree.addNode(null, "朋友", R.layout.contacts_group_item)
+        val groupNode4 = tree.addNode(null, "家人", R.layout.contacts_group_item)
+        val groupNode5 = tree.addNode(null, "five 同学", R.layout.contacts_group_item)
+
+        //第二层
+        var bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
+        var contact = ExampleListTreeAdapter.ContactInfo(bitmap, "mno 王二", "[在线]我是王二")
+        val contactNode1 = tree.addNode(groupNode2, contact, R.layout.contacts_contact_item)
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "jkl 王三", "[在线]我是王三")
+        val contactNode2 = tree.addNode(groupNode5, contact, R.layout.contacts_contact_item)
+        //再添加一个
+        bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "ghi 王四", "[离线]我没有状态")
+        tree.addNode(groupNode2, contact, R.layout.contacts_contact_item)
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "def 王五", "[离线]我没有状态")
+        tree.addNode(groupNode5, contact, R.layout.contacts_contact_item)
+
+        //第三层
+        bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
+        contact = ExampleListTreeAdapter.ContactInfo(bitmap, "abc 东邪", "[离线]出来还价")
         var n: ListTree.TreeNode = tree.addNode(contactNode1, contact, R.layout.contacts_contact_item)
         n.isShowExpandIcon = false
         //再添加一个
@@ -190,7 +247,7 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                 println(tree)
 //                val userList = ArrayList<java.util.HashMap<String?, String?>>()
 //                var user: HashMap<String?, String?>? = HashMap()
-                val lv: ListView = findViewById(R.id.listView)
+                val lv: ListView = findViewById(R.id.listView2)
 //                //https://stackoverflow.com/questions/50196357/android-kotlin-beginner-using-file-with-uri-returned-from-action-get-conte/50196709
 //                val inputStream = contentResolver.openInputStream(selectedFile)
 //                //val inputStream = assets.open(filename)
@@ -238,6 +295,8 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 //                    arrayOf("name", "designation", "location"), intArrayOf(R.id.tvName,
 //                        R.id.tvDesignation, R.id.tvLocation))
 //                lv.adapter = adapter
+
+                // put the contents of this tree into the tree viewer
             } catch (e: IOException) {
                 e.printStackTrace()
             } catch (e: XmlPullParserException) {
