@@ -119,28 +119,28 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 
         val groupNodes = mutableListOf<ListTree.TreeNode>()
         // loop through and add top level nodes
-        // https://stackoverflow.com/questions/19850468/how-can-i-access-the-previous-next-element-in-an-arraylist
-        var levelIt = levels.listIterator()
-        var lastLevel = 0
-        var stack = Stack<ListTree.TreeNode>()
-        for (d in data) {
-            val level = levelIt.next()
-            if (level <= lastLevel) {
-                var node = tree.addNode(null, "$d $level", R.layout.contacts_group_item)
-                stack.push(node)
-            } else {
-                if (stack.isNotEmpty()) {
-                    // make a subnode
-                    //var bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-                    //var contact = ExampleListTreeAdapter.ContactInfo(bitmap, "title", "detail")
-                    //tree.addNode(node, contact, R.layout.contacts_contact_item)
-                    var node = tree.addNode(stack.pop(), "$d $level", R.layout.contacts_group_item)
-                    stack.push(node)
-                }
-            }
-            //groupNodes.add(node)
-
-        }
+//        // https://stackoverflow.com/questions/19850468/how-can-i-access-the-previous-next-element-in-an-arraylist
+//        var levelIt = levels.listIterator()
+//        var lastLevel = 0
+//        var stack = Stack<ListTree.TreeNode>()
+//        for (d in data) {
+//            val level = levelIt.next()
+//            if (level <= lastLevel) {
+//                var node = tree.addNode(null, "$d $level", R.layout.contacts_group_item)
+//                stack.push(node)
+//            } else {
+//                if (stack.isNotEmpty()) {
+//                    // make a subnode
+//                    //var bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
+//                    //var contact = ExampleListTreeAdapter.ContactInfo(bitmap, "title", "detail")
+//                    //tree.addNode(node, contact, R.layout.contacts_contact_item)
+//                    var node = tree.addNode(stack.pop(), "$d $level", R.layout.contacts_group_item)
+//                    stack.push(node)
+//                }
+//            }
+//            //groupNodes.add(node)
+//
+//        }
 
         //创建后台数据：一棵树
         //创建组们，是root node，所有parent为null
@@ -265,19 +265,20 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                 println(path)
                 val reader = FileReader(fileName)
                 val builder = TreeBuilder()
-                val tree = builder.parseXML(reader)
-                println(tree)
+                val xmlTree = builder.parseXML(reader)
+                println(xmlTree)
 
 
                 val list = mutableListOf<String>()
                 val levels = mutableListOf<Int>()
 
                 var curr: TreeNode // node we'r parsing currently
-                curr = tree.child
+                curr = xmlTree.child
                 //list.add(curr.toString())
 
                 // in order tree traversal without recursion
                 var stack: Stack<TreeNode> = Stack<TreeNode>()
+                var parentStack : Stack<ListTree.TreeNode> = Stack<ListTree.TreeNode>()
 
                 // https://www.geeksforgeeks.org/inorder-tree-traversal-without-recursion/
                 var level = 0
@@ -301,10 +302,20 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                             // curr.toString()
                             list.add(name)
                             levels.add(level)
+                            // add it to the view
+                            var node : ListTree.TreeNode? = null
+                            if (parentStack.isEmpty()) {
+                                node = tree.addNode(null, "$name $level", R.layout.contacts_group_item)
+                            } else {
+                                node = tree.addNode(parentStack.lastElement(), "$name $level", R.layout.contacts_group_item)
+                            }
+
+
                             println(name)
                             if(curr.child != null) {
                                 // place pointer to a tree node on the stack before traversing the node's subtree
                                 stack.push(curr)
+                                parentStack.push(node)
                                 // if there are children go ahead and do them next
                                 curr = curr.child
                                 level += 1
@@ -319,6 +330,7 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                                 level -= 1
                                 println(level)
                                 curr = stack.pop()
+                                parentStack.pop()
                                 if (curr.sibling != null) {
                                     curr = curr.sibling
                                 } else {
