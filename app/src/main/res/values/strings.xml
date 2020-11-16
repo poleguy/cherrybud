@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Cherrybud</string>
+    <string name="hello_world">Hello World</string>
+    <string name="Open_File">Open File</string>
 </resources>

@@ -10,7 +10,7 @@
         android:id="@+id/sample_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:text="@string/hello_world"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -20,17 +20,21 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Button"
-        tools:layout_editor_absoluteX="159dp"
-        tools:layout_editor_absoluteY="134dp" />
+        android:layout_marginBottom="1dp"
+        android:text="@string/Open_File"
+        app:layout_constraintBottom_toTopOf="@+id/listView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ListView
         android:id="@+id/listView2"
         android:layout_width="409dp"
         android:layout_height="172dp"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="183dp" />
+        app:layout_constraintBottom_toBottomOf="@+id/include"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <include layout="@layout/content_main" />
+    <include
+        android:id="@+id/include"
+        layout="@layout/content_main" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
