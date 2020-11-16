@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/app/RecyclerListTreeView" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/app/src/main/java/RecyclerListTreeView" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/app/src/main/java/handle-path-oz" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/other/RecyclerListTreeView" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/other/handle-path-oz" vcs="Git" />
+  </component>
+</project>
