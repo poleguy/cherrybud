@@ -21,6 +21,16 @@ import treebuilder.TreeNode
 // holds node data for display and manipulation
 // TreeNode is a reference to underlying XML to allow eventual modification
 class NodeData(val name: String, val level: Int, val data: TreeNode) {
+    fun getContent() : String {
+
+        val content = if (data.secondChild != null && "rich_text" in data.secondChild.toString()) {
+            data.secondChild.child.toString()
+        } else {
+            // no content
+            ""
+        }
+        return content
+    }
 
 }
 
@@ -70,7 +80,8 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
         if (node.layoutResId == R.layout.contacts_group_item) {
             //group node
             val data = node.data as NodeData
-            val content = data.name.take(4)
+            val content = data.getContent()
+            //val content = data.name.take(4)
             val title = "${data.name} ${data.level} $content"
 
             val gvh = viewHoler as GroupViewHolder
