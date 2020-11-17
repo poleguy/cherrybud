@@ -11,7 +11,9 @@ import android.provider.MediaStore
 import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import br.com.onimur.handlepathoz.HandlePathOz
 import br.com.onimur.handlepathoz.HandlePathOzListener
 import br.com.onimur.handlepathoz.model.PathOz
@@ -25,7 +27,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.*
 
-
+// https://stackoverflow.com/questions/31297246/activity-appcompatactivity-fragmentactivity-and-actionbaractivity-when-to-us
 class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, PopupMenu.OnMenuItemClickListener {
 
     private lateinit var handlePathOz: HandlePathOz
@@ -41,6 +43,9 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //setSupportActionBar(toolbar)
+
+        // https://github.com/android/views-widgets-samples/blob/master/ViewPager2/app/src/main/java/androidx/viewpager2/integration/testapp/BaseCardActivity.kt
+        //var viewPager: ViewPager2 = findViewById(R.id.pager)
 
         handlePathOz = HandlePathOz(this, this)
         // Example of a call to a native method
@@ -60,11 +65,11 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 
 
 
-            sample_text.text = "blahblah"
+            //sample_text.text = "blahblah"
 
         }
 
-        sample_text.text = "blah"
+        //sample_text.text = "blah"
 
         //val list = listOf("a","b","c")
         //populateTreeData(list)
@@ -146,9 +151,10 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
             if (selectedFile != null)    {
                 val infile: InputStream? = contentResolver.openInputStream(selectedFile)
                 if (infile != null) {
-                    sample_text.text = infile.bufferedReader().use { it.readLine()
-                        it.readLine()
-                        it.readLine()}
+                    //sample_text.text = infile.bufferedReader().use { it.readLine()
+                    //    it.readLine()
+                    //    it.readLine()
+                    //}
                     //xmlParse(infile)
                     data?.data?.also { it ->
                         handlePathOz.getRealPath(it)
@@ -159,7 +165,7 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 
             //sample_text.text = File(path).readText()
         } else {
-            sample_text.text = "none"
+            //sample_text.text = "none"
         }
     }
 

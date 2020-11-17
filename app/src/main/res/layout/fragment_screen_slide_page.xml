@@ -1,0 +1,15 @@
+<!-- fragment_screen_slide_page.xml -->
+<!-- https://developer.android.com/training/animation/screen-slide-2 -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        style="?android:textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lineSpacingMultiplier="1.2"
+        android:padding="16dp"
+        android:text="@string/lorem_ipsum" />
+</ScrollView>
