@@ -13,9 +13,16 @@ import android.widget.Switch
 import android.widget.TextView
 import com.poleguy.cherrybud.niuedu.ListTree
 import com.poleguy.cherrybud.niuedu.ListTreeAdapter
+import treebuilder.TreeNode
 
 //import com.niuedu.ListTree
 //import com.niuedu.ListTreeAdapter
+
+// holds node data for display and manipulation
+// TreeNode is a reference to underlying XML to allow eventual modification
+class NodeData(val name: String, val level: Int, val data: TreeNode) {
+
+}
 
 class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClickListener) :
         ListTreeAdapter<ExampleListTreeAdapter.BaseViewHolder>(tree){
@@ -62,7 +69,9 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
 
         if (node.layoutResId == R.layout.contacts_group_item) {
             //group node
-            val title = node.data as String
+            val data = node.data as NodeData
+            val content = data.name.take(4)
+            val title = "${data.name} ${data.level} $content"
 
             val gvh = viewHoler as GroupViewHolder
             gvh.textViewTitle.text = title

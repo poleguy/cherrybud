@@ -112,71 +112,8 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 
     }
 
-    private fun populateTreeData(data: List<String>, levels: List<Int>) {
-        // ExampleListTreeAdapter
-
-        //val data = listOf("string1", "string2", "string3")
-
-        val groupNodes = mutableListOf<ListTree.TreeNode>()
-        // loop through and add top level nodes
-//        // https://stackoverflow.com/questions/19850468/how-can-i-access-the-previous-next-element-in-an-arraylist
-//        var levelIt = levels.listIterator()
-//        var lastLevel = 0
-//        var stack = Stack<ListTree.TreeNode>()
-//        for (d in data) {
-//            val level = levelIt.next()
-//            if (level <= lastLevel) {
-//                var node = tree.addNode(null, "$d $level", R.layout.contacts_group_item)
-//                stack.push(node)
-//            } else {
-//                if (stack.isNotEmpty()) {
-//                    // make a subnode
-//                    //var bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-//                    //var contact = ExampleListTreeAdapter.ContactInfo(bitmap, "title", "detail")
-//                    //tree.addNode(node, contact, R.layout.contacts_contact_item)
-//                    var node = tree.addNode(stack.pop(), "$d $level", R.layout.contacts_group_item)
-//                    stack.push(node)
-//                }
-//            }
-//            //groupNodes.add(node)
-//
-//        }
-
-        //创建后台数据：一棵树
-        //创建组们，是root node，所有parent为null
-        //val groupNode1 = tree.addNode(null, "特别关心", R.layout.contacts_group_item)
-        //val groupNode2 = groupNodes[1]
-        //val groupNode3 = tree.addNode(null, "朋友", R.layout.contacts_group_item)
-        //val groupNode4 = tree.addNode(null, "家人", R.layout.contacts_group_item)
-        //val groupNode5 = groupNodes[2]
-
-        //第二层
-        // second level
-        //var bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-        //var contact = ExampleListTreeAdapter.ContactInfo(bitmap, "mno 王二", "[在线]我是王二")
-        //val contactNode1 = tree.addNode(groupNode2, contact, R.layout.contacts_contact_item)
-
-        //contact = ExampleListTreeAdapter.ContactInfo(bitmap, "jkl 王三", "[在线]我是王三")
-        //val contactNode2 = tree.addNode(groupNode5, contact, R.layout.contacts_contact_item)
-
-
-        //再添加一个
-        //bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-        //contact = ExampleListTreeAdapter.ContactInfo(bitmap, "ghi 王四", "[离线]我没有状态")
-        //tree.addNode(groupNode2, contact, R.layout.contacts_contact_item)
-        //contact = ExampleListTreeAdapter.ContactInfo(bitmap, "def 王五", "[离线]我没有状态")
-        //tree.addNode(groupNode5, contact, R.layout.contacts_contact_item)
-
-        //第三层
-        //bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-        //contact = ExampleListTreeAdapter.ContactInfo(bitmap, "abc 东邪", "[离线]出来还价")
-        //var n: ListTree.TreeNode = tree.addNode(contactNode1, contact, R.layout.contacts_contact_item)
-        //n.isShowExpandIcon = false
-        //再添加一个
-        //bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-        //contact = ExampleListTreeAdapter.ContactInfo(bitmap, "李圆圆", "[离线]昨天出门没出去")
-        //n = tree.addNode(contactNode1, contact, R.layout.contacts_contact_item)
-        //n.isShowExpandIcon = false
+    private fun displayTree() {
+        // displays tree in list view
 
         adapter = ExampleListTreeAdapter(tree, this)
         listView.layoutManager = LinearLayoutManager(this)
@@ -268,11 +205,7 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                 val xmlTree = builder.parseXML(reader)
                 println(xmlTree)
 
-
-                val list = mutableListOf<String>()
-                val levels = mutableListOf<Int>()
-
-                var curr: TreeNode // node we'r parsing currently
+                var curr: TreeNode // node we're parsing currently
                 curr = xmlTree.child
                 //list.add(curr.toString())
 
@@ -283,9 +216,9 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                 // https://www.geeksforgeeks.org/inorder-tree-traversal-without-recursion/
                 var level = 0
                 var done = false
-                while (done == false) {
+                while (!done) {
                     // traverse the tree
-                    while (done == false) {
+                    while (!done) {
                         if (("node" in curr.toString())) {
                             var name: String = "none"
                             var tn: TagNode = curr as TagNode
@@ -299,15 +232,13 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                                     }
                                 }
                             }
-                            // curr.toString()
-                            list.add(name)
-                            levels.add(level)
                             // add it to the view
                             var node : ListTree.TreeNode? = null
-                            if (parentStack.isEmpty()) {
-                                node = tree.addNode(null, "$name $level", R.layout.contacts_group_item)
+                            val data = NodeData(name, level, curr)
+                            node = if (parentStack.isEmpty()) {
+                                tree.addNode(null, data, R.layout.contacts_group_item)
                             } else {
-                                node = tree.addNode(parentStack.lastElement(), "$name $level", R.layout.contacts_group_item)
+                                tree.addNode(parentStack.lastElement(), data, R.layout.contacts_group_item)
                             }
 
 
@@ -346,61 +277,7 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                     }
                 }
 
-
-
-                populateTreeData(list, levels)
-
-
-//                val userList = ArrayList<java.util.HashMap<String?, String?>>()
-//                var user: HashMap<String?, String?>? = HashMap()
-//                val lv: ListView = findViewById(R.id.listView2)
-//                //https://stackoverflow.com/questions/50196357/android-kotlin-beginner-using-file-with-uri-returned-from-action-get-conte/50196709
-//                val inputStream = contentResolver.openInputStream(selectedFile)
-//                //val inputStream = assets.open(filename)
-//                val parserFactory: XmlPullParserFactory = XmlPullParserFactory.newInstance()
-//                val parser: XmlPullParser = parserFactory.newPullParser()
-//                parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
-//                parser.setInput(inputStream, "utf-8")
-//                var tag: String?
-//                var text = ""
-//                var event = parser.eventType
-//                while (event != XmlPullParser.END_DOCUMENT) {
-//                    tag = parser.name
-//                    println(event)
-//                    println(tag)
-//                    print(text)
-//                    println(userList)
-//                    println("--")
-//                    when (event) {
-//
-//                            // # https://stackoverflow.com/questions/7726239/how-i-get-attribute-using-by-xmlpull-parser
-//                        // parser.getAttributeValue(null, "url")
-//                        XmlPullParser.START_TAG -> if (tag == "node") {
-//                            user = HashMap()
-//                            var name = parser.getAttributeValue(null, "name")
-//                            user!!["designation"] = name
-//                            println("node found $name")
-//                        }
-//                        XmlPullParser.TEXT -> {
-//                            text = parser.text
-//                            println("node $text")
-//                        }
-//
-//                        XmlPullParser.END_TAG -> when (tag) {
-//                            "rich_text" -> user!!["name"] = text
-//                            "node" -> if (user != null) {
-//                                userList.add(user)
-//                                //user!!["designation"] = parser.getAttributeValue(2)
-//
-//                            }
-//                        }
-//                    }
-//                    event = parser.next()
-//                }
-//                val adapter: ListAdapter = SimpleAdapter(this@MainActivity, userList, R.layout.row,
-//                    arrayOf("name", "designation", "location"), intArrayOf(R.id.tvName,
-//                        R.id.tvDesignation, R.id.tvLocation))
-//                lv.adapter = adapter
+                displayTree()
 
                 // put the contents of this tree into the tree viewer
             } catch (e: IOException) {
@@ -410,53 +287,6 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
             }
         }
 
-//    fun buildTree(parser: XmlPullParser) : TreeNode {
-//        var root: TreeNode = null
-//        var child: TreeNode = null
-//        var curSib: TreeNode = null
-//        var done: Boolean = false
-//        do {
-//            var event: Int  = parser.nextToken();
-//            when (event) {
-//                XmlPullParser.START_TAG -> {
-//                    root = buildTagNode()
-//                    if (parser.getDepth() == 1) {
-//                        documentTag = root
-//                    }
-//                    var t: TreeNode = buildTree();
-//                    while ( !t instanceof EndTag) {
-//                        if (child == null) {
-//                            child = t
-//                            curSib = child
-//                        } else {
-//                            curSib.setSibling(t)
-//                            curSib = t
-//                        }
-//                        t = buildTree()
-//                    }
-//                    root.setChild( child )
-//                    done = true
-//                }
-//
-//
-//                XmlPullParser.TEXT -> {
-//                    var content: String = parser.getText()
-//                    root = TextNode( text )
-//                    done = true
-//                }
-//                XmlPullParser.END_TAG -> {
-//                    var name: String = parser.getName()
-//                    root = EndTag(name)
-//                    var depth: int = parser.getDepth()
-//                    if ( depth == 1 )
-//                }
-//                XmlPullParser.END_DOCUMENT ->
-//                    root = new
-//
-//
-//            }
-//        }
-//    }
 override fun onMenuItemClick(item: MenuItem?): Boolean {
     when (item?.itemId) {
         R.id.action_add_item -> {
