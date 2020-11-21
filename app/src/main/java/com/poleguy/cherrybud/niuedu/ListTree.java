@@ -24,6 +24,25 @@ import java.util.Stack;
  * 似树而非树
  * 是为牛逼树
  */
+
+/**
+ * Created by nkm on 27/12/2017.
+ * <p>
+ * Principle: The son must be behind and close to the father
+ * <p>
+ * Express the tree in the form of List. It feels like a tree, but it is actually a List. This brings many benefits:
+ * 1 The first is that there is no recursive algorithm. All the places where recursion should be used have become loops.
+ * 2 The second is order. When inserting a node, you can specify how many sons of its father it is.
+ * 3 Finally, it is extremely suitable for use in RecyclerView. Use this class for background data,
+ * It is no different from List, no matter the root node row or the child node row is a row in RecyclerView.
+ * 4 No need to make any changes to RecyclerView
+ * <p>
+ * Proof by poem:
+ * Looks like a tree from a distance
+ * Can't be a tree up close
+ * Like a tree instead of a tree
+ * Is a great tree
+ */
 public class ListTree {
 
 
@@ -44,6 +63,7 @@ public class ListTree {
         private TreeNode parent = null;
 
         private boolean checked;
+        private boolean selected;
 
         //是否显示展开－收起图标
         private boolean showExpandIcon = true;
@@ -98,6 +118,9 @@ public class ListTree {
         public boolean isChecked() {
             return checked;
         }
+        public boolean isSelected() {
+            return selected;
+        }
 
         public boolean isShowExpandIcon() {
             return showExpandIcon;
@@ -109,6 +132,9 @@ public class ListTree {
 
         public void setChecked(boolean checked) {
             this.checked = checked;
+        }
+        public void setSelected(boolean selected) {
+            this.selected = selected;
         }
 
         void setDescendantChecked(boolean b) {
@@ -172,6 +198,10 @@ public class ListTree {
     /**
      * 用于遍历，代表遍历的位置
      * 注意，在树遍历过程中切不可改变树结构！！！！！！！！！！！！！！
+     */
+    /**
+     * Used for traversal, representing the position of traversal
+     * Note that the tree structure must not be changed during the tree traversal process! ! ! ! ! ! ! ! ! ! ! ! ! !
      */
     @Deprecated
     public class EnumPos {
@@ -569,6 +599,8 @@ public class ListTree {
     }
 
     //判断一个node在nodes中，还是在某个节点的collapseDescendant中
+
+    //Determine whether a node is in nodes or in the collapseDescendant of a node
     private List<TreeNode> getNodeContainer(TreeNode node){
         TreeNode parent = node.getParent();
         while (parent!=null){

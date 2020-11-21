@@ -9,17 +9,18 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
-import android.widget.*
+import android.widget.Button
+import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.viewpager2.widget.ViewPager2
 import br.com.onimur.handlepathoz.HandlePathOz
 import br.com.onimur.handlepathoz.HandlePathOzListener
 import br.com.onimur.handlepathoz.model.PathOz
 import com.poleguy.cherrybud.niuedu.ListTree
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.fragment_screen_slide_page.*
+import kotlinx.android.synthetic.main.tree_view.*
 import org.xmlpull.v1.XmlPullParserException
 import treebuilder.*
 import java.io.FileReader
@@ -67,6 +68,16 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 
             //sample_text.text = "blahblah"
 
+        }
+
+        // get reference to button
+        val buttonView = findViewById<Button>(R.id.buttonView)
+
+        // https://stackoverflow.com/questions/49697630/open-file-choose-in-android-app-using-kotlin
+        buttonView.setOnClickListener {
+            // https://developer.android.com/training/basics/firstapp/starting-activity
+            val intent = Intent(this, ScreenSlidePagerActivity::class.java)
+            startActivity(intent)
         }
 
         //sample_text.text = "blah"
@@ -296,17 +307,44 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 override fun onMenuItemClick(item: MenuItem?): Boolean {
     when (item?.itemId) {
         R.id.action_add_item -> {
+            // https://developer.android.com/training/basics/firstapp/starting-activity
+            sample_text.text = "ABCD"
+            slider_content.text = "Sample Content Updated"
+            //ScreenSlidePagerActivity.supportFragmentManager
+            //var fragmentRegister.textViewLanguage.setText("hello mister how do you do");
+            //var Fragment Object = ()getSupportFragmentManager()
+            // https://www.techotopia.com/index.php/Using_Fragments_in_Android_Studio_-_A_Kotlin_Example
+            val intent = Intent(this, ScreenSlidePagerActivity::class.java)
+            //startActivity(intent)
+
+
+//# https://stackoverflow.com/questions/2091465/how-do-i-pass-data-between-activities-in-android-application?rq=1
+
+            //val intent = Intent(baseContext, SignoutActivity::class.java)
+            intent.putExtra("EXTRA_DATA", "string passed in")
+            startActivity(intent)
+
+            //val textFragment = supportFragmentManager.findFragmentById(
+            //    R.id.content) as TextView
+
+            //textFragment.text = "aheth e the"
+            return true
             //向当前行增加一个儿子
+            //Add a son to the current row
             val node = adapter!!.currentNode
             val bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
+
+            //val contact = ExampleListTreeAdapter.ContactInfo(
+//                bitmap, "New contact", "[离线]我没有状态")[Offline] I have no status
             val contact = ExampleListTreeAdapter.ContactInfo(
-                bitmap, "New contact", "[离线]我没有状态")
+                bitmap, "New contact", "[Offline] I have no status")
             val childNode = tree.addNode(node, contact, R.layout.contacts_contact_item)
             adapter!!.notifyTreeItemInserted(node, childNode)
             return true
         }
         R.id.action_clear_children -> {
             //清空所有的儿子们
+            //Empty all the sons
             val node = adapter!!.currentNode
             val range = tree.clearDescendant(node)
             adapter!!.notifyItemRangeRemoved(range!!.first, range.second)

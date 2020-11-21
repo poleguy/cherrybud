@@ -41,6 +41,8 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
     private val itemMenuClickListener : PopupMenu.OnMenuItemClickListener
 
     //记录弹出菜单是在哪个行上出现的
+
+    //Record on which line the pop-up menu appears
     var currentNode: ListTree.TreeNode? = null
 
     //保存子行信息的类
@@ -114,6 +116,7 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
         init {
 
             //应响应点击事件而不是CheckedChange事件，因为那样会引起事件的递归触发
+            //Should respond to the click event instead of the CheckedChange event, because that will cause the event to be triggered recursively
             aSwitch.setOnClickListener {
                 val planeIndex = adapterPosition
                 val node = tree.getNodeByPlaneIndex(planeIndex)
@@ -121,9 +124,15 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
                 //改变所有的子孙们的状态
                 val count = tree.setDescendantChecked(planeIndex, node.isChecked)
                 notifyItemRangeChanged(planeIndex, count + 1)
+
+                // set node selected and unselect previously selected node
+                node.isSelected = true
+                //node.curSelected = node
+
             }
 
             //点了PopMenu控件，弹出PopMenu
+            //Click the PopMenu control, PopMenu pops up
             textViewMenu.setOnClickListener { v ->
                 val nodePlaneIndex = adapterPosition
                 val node = tree.getNodeByPlaneIndex(nodePlaneIndex)
@@ -146,11 +155,13 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
         init {
 
             //应响应点击事件而不是CheckedChange事件，因为那样会引起事件的递归触发
+            //Should respond to the click event instead of the CheckedChange event, because that will cause the event to be triggered recursively
             aSwitch.setOnClickListener {
                 val nodePlaneIndex = adapterPosition
                 val node = tree.getNodeByPlaneIndex(nodePlaneIndex)
                 node.isChecked = !node.isChecked
                 //改变所有的子孙们的状态
+                //Change the state of all children and grandchildren
                 val count = tree.setDescendantChecked(nodePlaneIndex, node.isChecked)
                 notifyItemRangeChanged(nodePlaneIndex, count + 1)
             }
