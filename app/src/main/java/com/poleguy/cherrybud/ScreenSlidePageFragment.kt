@@ -9,6 +9,8 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_screen_slide_page.*
 
+// https://developer.android.com/training/basics/fragments/communicating.html
+// https://stackoverflow.com/questions/2091465/how-do-i-pass-data-between-activities-in-android-application?rq=1
 class ScreenSlidePageFragment : Fragment() {
 
     override fun onCreateView(
@@ -29,13 +31,22 @@ class ScreenSlidePageFragment : Fragment() {
     // https://www.techotopia.com/index.php/Using_Fragments_in_Android_Studio_-_A_Kotlin_Example
 
     private fun buttonClicked(view: View) {
-       setText()
+        setText()
+    }
+
+    //  https://developer.android.com/reference/android/app/Fragment
+    override fun onStart() {
+        super.onStart()
+        setText()
     }
 
     fun setText() {
         //https://stackoverflow.com/questions/26939759/android-getintent-from-a-fragment
-        val data: String? = activity!!.intent.getStringExtra("EXTRA_DATA")
+        //val data: String? = activity!!.intent.getExtra("EXTRA_DATA")
+        val data : MainActivity.Item? = activity?.intent?.getParcelableExtra("EXTRA_DATA")
+
+        val str = data?.currentNode?.getContent()
         //slider_content.text = "blah"
-        slider_content.text = data
+        slider_content.text = str
     }
 }

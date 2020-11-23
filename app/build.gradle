@@ -40,6 +40,11 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    // https://medium.com/the-lazy-coders-journal/easy-parcelable-in-kotlin-the-lazy-coders-way-9683122f4c00
+    // Add for using latest experimental build of Android Extensions
+    androidExtensions {
+        experimental = true
+    }
 }
 
 dependencies {

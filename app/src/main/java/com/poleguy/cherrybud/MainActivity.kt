@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import android.provider.MediaStore
 import android.view.MenuItem
 import android.widget.Button
@@ -18,6 +19,8 @@ import br.com.onimur.handlepathoz.HandlePathOz
 import br.com.onimur.handlepathoz.HandlePathOzListener
 import br.com.onimur.handlepathoz.model.PathOz
 import com.poleguy.cherrybud.niuedu.ListTree
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_screen_slide_page.*
 import kotlinx.android.synthetic.main.tree_view.*
@@ -189,7 +192,7 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
     companion object {
         // Used to load the 'native-lib' library on application startup.
         init {
-           // System.loadLibrary("native-lib")
+            // System.loadLibrary("native-lib")
         }
     }
 
@@ -212,147 +215,162 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
 
     fun xmlParse(path: String) {
         // https://developer.android.com/reference/org/xmlpull/v1/XmlPullParser
-            try {
-                println("test")
-                //val fileName = getRealPathFromURI(null, selectedFile)
-                val fileName = path
-                println(path)
-                val reader = FileReader(fileName)
-                val builder = TreeBuilder()
-                val xmlTree = builder.parseXML(reader)
-                println(xmlTree)
+        try {
+            println("test")
+            //val fileName = getRealPathFromURI(null, selectedFile)
+            val fileName = path
+            println(path)
+            val reader = FileReader(fileName)
+            val builder = TreeBuilder()
+            val xmlTree = builder.parseXML(reader)
+            println(xmlTree)
 
-                var curr: TreeNode // node we're parsing currently
-                curr = xmlTree.child
-                //list.add(curr.toString())
+            var curr: TreeNode // node we're parsing currently
+            curr = xmlTree.child
+            //list.add(curr.toString())
 
-                // in order tree traversal without recursion
-                var stack: Stack<TreeNode> = Stack<TreeNode>()
-                var parentStack : Stack<ListTree.TreeNode> = Stack<ListTree.TreeNode>()
+            // in order tree traversal without recursion
+            var stack: Stack<TreeNode> = Stack<TreeNode>()
+            var parentStack : Stack<ListTree.TreeNode> = Stack<ListTree.TreeNode>()
 
-                // https://www.geeksforgeeks.org/inorder-tree-traversal-without-recursion/
-                var level = 0
-                var done = false
+            // https://www.geeksforgeeks.org/inorder-tree-traversal-without-recursion/
+            var level = 0
+            var done = false
+            while (!done) {
+                // traverse the tree
                 while (!done) {
-                    // traverse the tree
-                    while (!done) {
-                        if (("node" in curr.toString())) {
-                            var name: String = "none"
-                            var tn: TagNode = curr as TagNode
-                            var al: AttributeList = tn.attrList as AttributeList
-                            if (al != null) {
-                                var it: Iterator<Attribute> = al.iterator as Iterator<Attribute>
-                                for (attr in it) {
-                                    if (attr.name == "name") {
-                                        name = attr.value
-                                        break
-                                    }
-                                }
-                            }
-                            // add it to the view
-                            var node : ListTree.TreeNode? = null
-                            val data = NodeData(name, level, curr)
-                            node = if (parentStack.isEmpty()) {
-                                tree.addNode(null, data, R.layout.contacts_group_item)
-                            } else {
-                                tree.addNode(parentStack.lastElement(), data, R.layout.contacts_group_item)
-                            }
-
-
-                            println(name)
-                            if(curr.child != null) {
-                                // place pointer to a tree node on the stack before traversing the node's subtree
-                                stack.push(curr)
-                                parentStack.push(node)
-                                // if there are children go ahead and do them next
-                                curr = curr.child
-                                level += 1
-                                println(level)
-                                continue
-                            }
-                        }
-                        if (curr.sibling == null ) {
-                            if (stack.isNotEmpty()) {
-                                // reached end of siblings
-                                // go back up a level
-                                level -= 1
-                                println(level)
-                                curr = stack.pop()
-                                parentStack.pop()
-                                if (curr.sibling != null) {
-                                    curr = curr.sibling
-                                } else {
+                    if (("node" in curr.toString())) {
+                        var name: String = "none"
+                        var tn: TagNode = curr as TagNode
+                        var al: AttributeList = tn.attrList as AttributeList
+                        if (al != null) {
+                            var it: Iterator<Attribute> = al.iterator as Iterator<Attribute>
+                            for (attr in it) {
+                                if (attr.name == "name") {
+                                    name = attr.value
                                     break
                                 }
-                            } else {
-                                done = true
-                                break // stack is empty, so we're done
                             }
+                        }
+                        // add it to the view
+                        var node : ListTree.TreeNode? = null
+                        val data = NodeData(name, level, curr)
+                        node = if (parentStack.isEmpty()) {
+                            tree.addNode(null, data, R.layout.contacts_group_item)
                         } else {
-                            curr = curr.sibling // update current node
+                            tree.addNode(parentStack.lastElement(), data, R.layout.contacts_group_item)
+                        }
+
+
+                        println(name)
+                        if(curr.child != null) {
+                            // place pointer to a tree node on the stack before traversing the node's subtree
+                            stack.push(curr)
+                            parentStack.push(node)
+                            // if there are children go ahead and do them next
+                            curr = curr.child
+                            level += 1
+                            println(level)
+                            continue
                         }
                     }
+                    if (curr.sibling == null ) {
+                        if (stack.isNotEmpty()) {
+                            // reached end of siblings
+                            // go back up a level
+                            level -= 1
+                            println(level)
+                            curr = stack.pop()
+                            parentStack.pop()
+                            if (curr.sibling != null) {
+                                curr = curr.sibling
+                            } else {
+                                break
+                            }
+                        } else {
+                            done = true
+                            break // stack is empty, so we're done
+                        }
+                    } else {
+                        curr = curr.sibling // update current node
+                    }
                 }
-
-                displayTree()
-
-                // put the contents of this tree into the tree viewer
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } catch (e: XmlPullParserException) {
-                e.printStackTrace()
             }
+
+            displayTree()
+
+            // put the contents of this tree into the tree viewer
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: XmlPullParserException) {
+            e.printStackTrace()
         }
-
-override fun onMenuItemClick(item: MenuItem?): Boolean {
-    when (item?.itemId) {
-        R.id.action_add_item -> {
-            // https://developer.android.com/training/basics/firstapp/starting-activity
-            sample_text.text = "ABCD"
-            slider_content.text = "Sample Content Updated"
-            //ScreenSlidePagerActivity.supportFragmentManager
-            //var fragmentRegister.textViewLanguage.setText("hello mister how do you do");
-            //var Fragment Object = ()getSupportFragmentManager()
-            // https://www.techotopia.com/index.php/Using_Fragments_in_Android_Studio_-_A_Kotlin_Example
-            val intent = Intent(this, ScreenSlidePagerActivity::class.java)
-            //startActivity(intent)
-
-
-//# https://stackoverflow.com/questions/2091465/how-do-i-pass-data-between-activities-in-android-application?rq=1
-
-            //val intent = Intent(baseContext, SignoutActivity::class.java)
-            intent.putExtra("EXTRA_DATA", "string passed in")
-            startActivity(intent)
-
-            //val textFragment = supportFragmentManager.findFragmentById(
-            //    R.id.content) as TextView
-
-            //textFragment.text = "aheth e the"
-            return true
-            //向当前行增加一个儿子
-            //Add a son to the current row
-            val node = adapter!!.currentNode
-            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-
-            //val contact = ExampleListTreeAdapter.ContactInfo(
-//                bitmap, "New contact", "[离线]我没有状态")[Offline] I have no status
-            val contact = ExampleListTreeAdapter.ContactInfo(
-                bitmap, "New contact", "[Offline] I have no status")
-            val childNode = tree.addNode(node, contact, R.layout.contacts_contact_item)
-            adapter!!.notifyTreeItemInserted(node, childNode)
-            return true
-        }
-        R.id.action_clear_children -> {
-            //清空所有的儿子们
-            //Empty all the sons
-            val node = adapter!!.currentNode
-            val range = tree.clearDescendant(node)
-            adapter!!.notifyItemRangeRemoved(range!!.first, range.second)
-            return true
-        }
-        else -> return false
     }
-}
+
+    @Parcelize
+    data class Item(
+        var currentNode: @RawValue NodeDataStr,
+        var title: String
+    ) : Parcelable
+
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.action_add_item -> {
+                // https://developer.android.com/training/basics/firstapp/starting-activity
+                sample_text.text = "ABCD"
+                slider_content.text = "Sample Content Updated"
+                //ScreenSlidePagerActivity.supportFragmentManager
+                //var fragmentRegister.textViewLanguage.setText("hello mister how do you do");
+                //var Fragment Object = ()getSupportFragmentManager()
+                // https://www.techotopia.com/index.php/Using_Fragments_in_Android_Studio_-_A_Kotlin_Example
+                val intent = Intent(this, ScreenSlidePagerActivity::class.java)
+                //startActivity(intent)
+
+
+                //# https://stackoverflow.com/questions/2091465/how-do-i-pass-data-between-activities-in-android-application?rq=1
+
+                val currentNode = adapter!!.currentNode
+                val currentNodeData : NodeData = adapter!!.currentNode?.data as NodeData
+                val str = currentNodeData.getContent()
+                val nds : NodeDataStr = NodeDataStr(str)
+                //val intent = Intent(baseContext, SignoutActivity::class.java)
+
+                // https://stackoverflow.com/questions/2139134/how-to-send-an-object-from-one-android-activity-to-another-using-intents
+                // https://medium.com/the-lazy-coders-journal/easy-parcelable-in-kotlin-the-lazy-coders-way-9683122f4c00
+
+                var item = Item(nds,"title")
+                intent.putExtra("EXTRA_DATA", item)
+                startActivity(intent)
+
+                //val textFragment = supportFragmentManager.findFragmentById(
+                //    R.id.content) as TextView
+
+                //textFragment.text = "aheth e the"
+                return true
+                //向当前行增加一个儿子
+                //Add a son to the current row
+                val node = adapter!!.currentNode
+                val bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
+
+                //val contact = ExampleListTreeAdapter.ContactInfo(
+//                bitmap, "New contact", "[离线]我没有状态")[Offline] I have no status
+                val contact = ExampleListTreeAdapter.ContactInfo(
+                    bitmap, "New contact", "[Offline] I have no status")
+                val childNode = tree.addNode(node, contact, R.layout.contacts_contact_item)
+                adapter!!.notifyTreeItemInserted(node, childNode)
+                return true
+            }
+            R.id.action_clear_children -> {
+                //清空所有的儿子们
+                //Empty all the sons
+                val node = adapter!!.currentNode
+                val range = tree.clearDescendant(node)
+                adapter!!.notifyItemRangeRemoved(range!!.first, range.second)
+                return true
+            }
+            else -> return false
+        }
+    }
 
     //http://bearcave.com/software/java/xml/treebuilder.html
 }

@@ -3,6 +3,7 @@ package com.poleguy.cherrybud
 //package qst.com.app4cotlin
 
 import android.graphics.Bitmap
+import android.os.Parcelable
 //import android.support.v7.widget.PopupMenu
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,8 @@ import android.widget.Switch
 import android.widget.TextView
 import com.poleguy.cherrybud.niuedu.ListTree
 import com.poleguy.cherrybud.niuedu.ListTreeAdapter
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 import treebuilder.TreeNode
 
 //import com.niuedu.ListTree
@@ -20,19 +23,51 @@ import treebuilder.TreeNode
 
 // holds node data for display and manipulation
 // TreeNode is a reference to underlying XML to allow eventual modification
-class NodeData(val name: String, val level: Int, val data: TreeNode) {
+@Parcelize
+class NodeData(val name: String, val level: Int, val treeNode: @RawValue TreeNode) : Parcelable {
+    private var data: TreeNode = treeNode
+
     fun getContent() : String {
 
-        val content = if (data.secondChild != null && "rich_text" in data.secondChild.toString()) {
-            data.secondChild.child.toString()
+        var content = ""
+        if (data.child != null) {
+            var curChild : TreeNode = data.child
+            while (true) {
+                // loop through all children and render text (etc.)
+                if ("rich_text" in curChild.toString()) {
+                    content +=  curChild?.child?.toString()
+                } else {
+                    // unhandled: encoded_png, etc.
+                    content += curChild.toString()
+                }
+                if (curChild.sibling != null) {
+                    curChild = curChild.sibling
+                } else {
+                    break
+                }
+            }
+        //}
+        //val content = if (data.secondChild != null && "rich_text" in data.secondChild.toString()) {
+        //    data.secondChild.child.toString()
         } else {
             // no content
             ""
         }
         return content
     }
-
+    //# https://www.sitepoint.com/transfer-data-between-activities-with-android-parcelable/
 }
+
+@Parcelize
+class NodeDataStr(val str: String) : Parcelable {
+    private var data: String = str
+
+    fun getContent() : String {
+        return data
+    }
+    //# https://www.sitepoint.com/transfer-data-between-activities-with-android-parcelable/
+}
+
 
 class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClickListener) :
         ListTreeAdapter<ExampleListTreeAdapter.BaseViewHolder>(tree){
@@ -82,9 +117,10 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
         if (node.layoutResId == R.layout.contacts_group_item) {
             //group node
             val data = node.data as NodeData
-            val content = data.getContent()
+            //val content = data.getContent()
             //val content = data.name.take(4)
-            val title = "${data.name} ${data.level} $content"
+            //val title = "${data.name} ${data.level} $content"
+            val title = "${data.name}"
 
             val gvh = viewHoler as GroupViewHolder
             gvh.textViewTitle.text = title
