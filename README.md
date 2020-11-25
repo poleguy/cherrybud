@@ -16,13 +16,13 @@ http://poleguy.com/cherrybud_v1.0.apk
 I feel google is way too slow for approval to wait on them to do alpha testing.
 
 immediate todo:
-* render text in another view
 * clean up gui (open file button)
 * open files based on extension
 
 
 
-long term:
-
+longer term:
+* search
 * allow editing
 * handle detecting and auto loading changes over the network
+* ctb support
