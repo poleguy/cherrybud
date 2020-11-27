@@ -18,7 +18,7 @@ I feel google is way too slow for approval to wait on them to do alpha testing.
 immediate todo:
 * clean up gui (open file button)
 * open files based on extension
-
+* remember last loaded file 
 
 
 longer term:
