@@ -49,4 +49,6 @@ class ScreenSlidePageFragment : Fragment() {
         //slider_content.text = "blah"
         slider_content.text = str
     }
+
+
 }

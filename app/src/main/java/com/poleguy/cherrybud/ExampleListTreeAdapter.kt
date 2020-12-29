@@ -34,8 +34,13 @@ class NodeData(val name: String, val level: Int, val treeNode: @RawValue TreeNod
             var curChild : TreeNode = data.child
             while (true) {
                 // loop through all children and render text (etc.)
+                // todo: make recursive
+                // in order tree traversal without recursion
+                var stack: Stack<TreeNode> = Stack<TreeNode>()
                 if ("rich_text" in curChild.toString()) {
                     content +=  curChild?.child?.toString()
+                } else if ("TEXT" in curChild.type.toString()) {
+                    // don't print extra newlines
                 } else {
                     // unhandled: encoded_png, etc.
                     content += curChild.toString()
@@ -69,11 +74,12 @@ class NodeDataStr(val str: String) : Parcelable {
 }
 
 
-class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClickListener) :
+class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClickListener, click_listener: OpenFileClicked) :
         ListTreeAdapter<ExampleListTreeAdapter.BaseViewHolder>(tree){
 
     //行上弹出菜单的侦听器
     private val itemMenuClickListener : PopupMenu.OnMenuItemClickListener
+    private val clickListener : OpenFileClicked
 
     //记录弹出菜单是在哪个行上出现的
 
@@ -89,6 +95,7 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
 
     init{
         itemMenuClickListener = listener
+        clickListener = click_listener
     }
 
     override fun onCreateNodeView(parent: ViewGroup?, viewType: Int): BaseViewHolder? {
@@ -173,11 +180,15 @@ class ExampleListTreeAdapter(tree: ListTree, listener : PopupMenu.OnMenuItemClic
                 val nodePlaneIndex = adapterPosition
                 val node = tree.getNodeByPlaneIndex(nodePlaneIndex)
                 currentNode = node
-                val popup = PopupMenu(v.context, v)
-                popup.setOnMenuItemClickListener(itemMenuClickListener)
-                val inflater = popup.menuInflater
-                inflater.inflate(R.menu.menu_item, popup.menu)
-                popup.show()
+                //val popup = PopupMenu(v.context, v)
+                //popup.setOnMenuItemClickListener(itemMenuClickListener)
+                //val inflater = popup.menuInflater
+                //inflater.inflate(R.menu.menu_item, popup.menu)
+                //popup.show()
+
+                // immediately open node:
+                clickListener.openNode()
+
             }
         }
     }

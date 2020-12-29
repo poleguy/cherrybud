@@ -1,19 +1,29 @@
 package com.poleguy.cherrybud
 
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Parcelable
 import android.provider.MediaStore
+import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.com.onimur.handlepathoz.HandlePathOz
 import br.com.onimur.handlepathoz.HandlePathOzListener
@@ -22,17 +32,27 @@ import com.poleguy.cherrybud.niuedu.ListTree
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.fragment_screen_slide_page.*
 import kotlinx.android.synthetic.main.tree_view.*
 import org.xmlpull.v1.XmlPullParserException
 import treebuilder.*
-import java.io.FileReader
-import java.io.IOException
-import java.io.InputStream
+import java.io.*
 import java.util.*
 
+public interface OpenFileClicked {
+    /**
+     * This method will be invoked when an item is clicked if the item
+     * itself did not already handle the event.
+     *
+     * tbd:
+     * @param item the menu item that was clicked
+     * @return {@code true} if the event was handled, {@code false}
+     *         otherwise
+     */
+    fun openNode()
+}
+
 // https://stackoverflow.com/questions/31297246/activity-appcompatactivity-fragmentactivity-and-actionbaractivity-when-to-us
-class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, PopupMenu.OnMenuItemClickListener {
+class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, PopupMenu.OnMenuItemClickListener, OpenFileClicked {
 
     private lateinit var handlePathOz: HandlePathOz
     var path : String = "none"
@@ -43,10 +63,31 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
     //从ListTreeAdapter派生的Adapter
     internal var adapter: ExampleListTreeAdapter? = null
 
+    //# https://developer.android.com/training/permissions/requesting.html
+    // Register the permissions callback, which handles the user's response to the
+    // system permissions dialog. Save the return value, an instance of
+    // ActivityResultLauncher. You can use either a val, as shown in this snippet,
+    // or a lateinit var in your onAttach() or onCreate() method.
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission is granted. Continue the action or workflow in your
+                // app.
+
+            } else {
+                // Explain to the user that the feature is unavailable because the
+                // features requires a permission that the user has denied. At the
+                // same time, respect the user's decision. Don't link to system
+                // settings in an effort to convince the user to change their
+                // decision.
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //setSupportActionBar(toolbar)
 
         // https://github.com/android/views-widgets-samples/blob/master/ViewPager2/app/src/main/java/androidx/viewpager2/integration/testapp/BaseCardActivity.kt
         //var viewPager: ViewPager2 = findViewById(R.id.pager)
@@ -55,38 +96,14 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
         // Example of a call to a native method
         //sample_text.text = stringFromJNI()
 
-        // get reference to button
-        val button = findViewById<Button>(R.id.button)
-
-        // https://stackoverflow.com/questions/49697630/open-file-choose-in-android-app-using-kotlin
-        button.setOnClickListener {
-
-            val intent = Intent()
-                .setType("*/*")
-                .setAction(Intent.ACTION_GET_CONTENT)
-
-            startActivityForResult(Intent.createChooser(intent, "Select a file"), 111)
-
-
-
-            //sample_text.text = "blahblah"
-
-        }
-
-        // get reference to button
-        val buttonView = findViewById<Button>(R.id.buttonView)
-
-        // https://stackoverflow.com/questions/49697630/open-file-choose-in-android-app-using-kotlin
-        buttonView.setOnClickListener {
-            // https://developer.android.com/training/basics/firstapp/starting-activity
-            val intent = Intent(this, ScreenSlidePagerActivity::class.java)
-            startActivity(intent)
-        }
-
         //sample_text.text = "blah"
 
         //val list = listOf("a","b","c")
         //populateTreeData(list)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            showIntent()
+        }
+
 
     }
 
@@ -125,42 +142,174 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
         n = tree.addNode(contactNode1, contact, R.layout.contacts_contact_item)
         n.isShowExpandIcon = false
 
-        adapter = ExampleListTreeAdapter(tree, this)
+        adapter = ExampleListTreeAdapter(tree, this, this)
         listView.layoutManager = LinearLayoutManager(this)
-        listView.setAdapter(adapter)
+        listView.adapter = adapter
 
     }
 
     private fun displayTree() {
         // displays tree in list view
 
-        adapter = ExampleListTreeAdapter(tree, this)
+        adapter = ExampleListTreeAdapter(tree, this, this)
         listView.layoutManager = LinearLayoutManager(this)
-        listView.setAdapter(adapter)
+        listView.adapter = adapter
 
     }
 
+    private fun saveMRU(path:String) {
+        // not opened with an intent?
+        // restore old path
+        // https://developer.android.com/guide/topics/ui/settings/use-saved-values
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this /* Activity context */)
+        //val lastFile = sharedPreferences.getString("last_file", "")
+        //Toast.makeText(this, "URI for last file: ${lastFile}", Toast.LENGTH_LONG).show()
+
+
+        // https://developer.android.com/training/data-storage/shared-preferences?authuser=3
+        with (sharedPreferences.edit()) {
+            putString("last_file", path)
+            apply()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun openPath(path:String) {
+        // check permissions and open path
+        // save in most recently used
+        saveMRU(path)
+
+        //# https://stackoverflow.com/questions/23527767/open-failed-eacces-permission-denied
+        //stackoverflow.com/questions/23527767/open-failed-eacces-permission-denied
+        // Storage Permissions
+        val REQUEST_EXTERNAL_STORAGE = 1
+        val PERMISSIONS_STORAGE = arrayOf<String>(
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
+        /**
+         * Checks if the app has permission to write to device storage
+         *
+         * If the app does not has permission then the user will be prompted to grant permissions
+         *
+         * @param activity
+         */
+        fun verifyStoragePermissions(activity: Activity?) {
+            // Check if we have write permission
+            val permission: Int = ActivityCompat.checkSelfPermission(
+                applicationContext,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                // We don't have permission so prompt the user
+                if (activity != null) {
+                    ActivityCompat.requestPermissions(
+                        activity,
+                        PERMISSIONS_STORAGE,
+                        REQUEST_EXTERNAL_STORAGE
+                    )
+                }
+            }
+        }
+
+        verifyStoragePermissions(this)
+
+
+        //Handle any Exception (Optional)
+        //tr?.let {
+        //    Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
+        //}
+
+        //# https://developer.android.com/training/permissions/requesting.html
+        when {
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // You can use the API that requires the permission.
+            }
+            shouldShowRequestPermissionRationale( android.Manifest.permission.READ_EXTERNAL_STORAGE ) -> {
+                // In an educational UI, explain to the user why your app requires this
+                // permission for a specific feature to behave as expected. In this UI,
+                // include a "cancel" or "no thanks" button that allows the user to
+                // continue using your app without granting the permission.
+                //showInContextUI(...)
+            }
+            else -> {
+                // You can directly ask for the permission.
+                // The registered ActivityResultCallback gets the result of this request.
+                requestPermissionLauncher.launch(
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                )
+            }
+        }
+        when {
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // You can use the API that requires the permission.
+                println("write access ok")
+            }
+            shouldShowRequestPermissionRationale( android.Manifest.permission.WRITE_EXTERNAL_STORAGE ) -> {
+                // In an educational UI, explain to the user why your app requires this
+                // permission for a specific feature to behave as expected. In this UI,
+                // include a "cancel" or "no thanks" button that allows the user to
+                // continue using your app without granting the permission.
+                //showInContextUI(...)
+            }
+            else -> {
+                // You can directly ask for the permission.
+                // The registered ActivityResultCallback gets the result of this request.
+                requestPermissionLauncher.launch(
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            }
+        }
+        fun main() {
+            //https://stackoverflow.com/questions/7908193/how-to-access-downloads-folder-in-android
+            val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+            println(dir)
+            handleIntent()
+
+
+            //val inputStream: InputStream = File(dir?.path + File.separator + "simple.ctd").inputStream()
+            //val inputString = inputStream.bufferedReader().use { it.readText() }
+            //println(inputString)
+        }
+        main()
+        xmlParse(path)
+
+    }
     //On Completion (Sucess or Error)
     //If there is a cancellation or error.
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onRequestHandlePathOz(pathOz: PathOz, tr: Throwable?) {
         //Hide Progress
 
         //Now you can work with real path:
-        Toast.makeText(this, "The real path is: ${pathOz.path} \n The type is: ${pathOz.type}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            this,
+            "The real path is: ${pathOz.path} \n The type is: ${pathOz.type}",
+            Toast.LENGTH_SHORT
+        ).show()
         path = pathOz.path
-        xmlParse(path)
-        //Handle any Exception (Optional)
-        tr?.let {
-            Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
-        }
+
+        openPath(path)
+
     }
+
     // https://www.raywenderlich.com/2705552-introduction-to-android-activities-with-kotlin
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    // called after clicking on open file
+    private fun onActivityResult(requestCode: Int, result: ActivityResult) {
+        //super.onActivityResult(requestCode, resultCode, data)
 
         // https://stackoverflow.com/questions/55182578/how-to-read-plain-text-file-in-kotlin
-        if (requestCode == 111 && resultCode == RESULT_OK) {
-            val selectedFile = data?.data //The uri with the location of the file
+        if (requestCode == 111 && result.resultCode == RESULT_OK) {
+            val intent = result.data
+            val selectedFile = intent?.data //The uri with the location of the file
             //sample_text.text = selectedFile.toString()
             if (selectedFile != null)    {
                 val infile: InputStream? = contentResolver.openInputStream(selectedFile)
@@ -169,8 +318,10 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
                     //    it.readLine()
                     //    it.readLine()
                     //}
+
+
                     //xmlParse(infile)
-                    data?.data?.also { it ->
+                    intent?.data?.also { it ->
                         handlePathOz.getRealPath(it)
                     }
                     //xmlParse(selectedFile)
@@ -178,8 +329,6 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
             }
 
             //sample_text.text = File(path).readText()
-        } else {
-            //sample_text.text = "none"
         }
     }
 
@@ -313,51 +462,39 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
         var title: String
     ) : Parcelable
 
+    override fun openNode() {
+        // https://developer.android.com/training/basics/firstapp/starting-activity
+        sample_text.text = "ABCD"
+        //slider_content.text = "Sample Content Updated"
+        //ScreenSlidePagerActivity.supportFragmentManager
+        //var fragmentRegister.textViewLanguage.setText("hello mister how do you do");
+        //var Fragment Object = ()getSupportFragmentManager()
+        // https://www.techotopia.com/index.php/Using_Fragments_in_Android_Studio_-_A_Kotlin_Example
+        val intent = Intent(this, ScreenSlidePagerActivity::class.java)
+        //startActivity(intent)
+
+
+        //# https://stackoverflow.com/questions/2091465/how-do-i-pass-data-between-activities-in-android-application?rq=1
+
+        val currentNode = adapter!!.currentNode
+        val currentNodeData : NodeData = adapter!!.currentNode?.data as NodeData
+        val str = currentNodeData.getContent()
+        val nds : NodeDataStr = NodeDataStr(str)
+        //val intent = Intent(baseContext, SignoutActivity::class.java)
+
+        // https://stackoverflow.com/questions/2139134/how-to-send-an-object-from-one-android-activity-to-another-using-intents
+        // https://medium.com/the-lazy-coders-journal/easy-parcelable-in-kotlin-the-lazy-coders-way-9683122f4c00
+
+        var item = Item(nds,"title")
+        intent.putExtra("EXTRA_DATA", item)
+        startActivity(intent)
+
+    }
+
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.action_add_item -> {
-                // https://developer.android.com/training/basics/firstapp/starting-activity
-                sample_text.text = "ABCD"
-                slider_content.text = "Sample Content Updated"
-                //ScreenSlidePagerActivity.supportFragmentManager
-                //var fragmentRegister.textViewLanguage.setText("hello mister how do you do");
-                //var Fragment Object = ()getSupportFragmentManager()
-                // https://www.techotopia.com/index.php/Using_Fragments_in_Android_Studio_-_A_Kotlin_Example
-                val intent = Intent(this, ScreenSlidePagerActivity::class.java)
-                //startActivity(intent)
-
-
-                //# https://stackoverflow.com/questions/2091465/how-do-i-pass-data-between-activities-in-android-application?rq=1
-
-                val currentNode = adapter!!.currentNode
-                val currentNodeData : NodeData = adapter!!.currentNode?.data as NodeData
-                val str = currentNodeData.getContent()
-                val nds : NodeDataStr = NodeDataStr(str)
-                //val intent = Intent(baseContext, SignoutActivity::class.java)
-
-                // https://stackoverflow.com/questions/2139134/how-to-send-an-object-from-one-android-activity-to-another-using-intents
-                // https://medium.com/the-lazy-coders-journal/easy-parcelable-in-kotlin-the-lazy-coders-way-9683122f4c00
-
-                var item = Item(nds,"title")
-                intent.putExtra("EXTRA_DATA", item)
-                startActivity(intent)
-
-                //val textFragment = supportFragmentManager.findFragmentById(
-                //    R.id.content) as TextView
-
-                //textFragment.text = "aheth e the"
-                return true
-                //向当前行增加一个儿子
-                //Add a son to the current row
-                val node = adapter!!.currentNode
-                val bitmap = BitmapFactory.decodeResource(resources, R.drawable.contacts_normal)
-
-                //val contact = ExampleListTreeAdapter.ContactInfo(
-//                bitmap, "New contact", "[离线]我没有状态")[Offline] I have no status
-                val contact = ExampleListTreeAdapter.ContactInfo(
-                    bitmap, "New contact", "[Offline] I have no status")
-                val childNode = tree.addNode(node, contact, R.layout.contacts_contact_item)
-                adapter!!.notifyTreeItemInserted(node, childNode)
+                openNode()
                 return true
             }
             R.id.action_clear_children -> {
@@ -373,4 +510,147 @@ class MainActivity : AppCompatActivity(),  HandlePathOzListener.SingleUri, Popup
     }
 
     //http://bearcave.com/software/java/xml/treebuilder.html
+
+
+
+    //# https://developer.android.com/training/basics/intents/filters
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun showIntent() {
+
+        // Figure out what to do based on the intent type
+        val type = intent?.type
+        val uri = intent?.data
+        Toast.makeText(this, "${type} ${uri}", Toast.LENGTH_LONG).show()
+        print("showIntent")
+        println(uri.toString())
+        if (uri != null) {
+
+            //# https://github.com/xgouchet/Ted/blob/979f8538bbd856fb9f8b6f5f29ff594addc9574d/Ted/src/fr/xgouchet/texteditor/TedActivity.java
+
+
+            handlePathOz.getRealPath(uri)
+        } else {
+            // not opened with an intent?
+            // restore old path
+            // https://developer.android.com/guide/topics/ui/settings/use-saved-values
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this /* Activity context */)
+            val lastFile = sharedPreferences.getString("last_file", "")
+            Toast.makeText(this, "URI for last file: ${lastFile}", Toast.LENGTH_LONG).show()
+            if (lastFile != null) {
+                openPath(lastFile)
+            }
+        }
+
+        //xmlParse(uri.toString())
+
+    }
+    private fun handleIntent() {
+        val uri = intent.data
+        if (uri == null) {
+            tellUserThatCouldntOpenFile()
+            return
+        }
+        var text: String? = null
+        try {
+            val inputStream = contentResolver.openInputStream(uri)
+            text = getStringFromInputStream(inputStream)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        if (text == null) {
+            tellUserThatCouldntOpenFile()
+            return
+        }
+        //val textView: TextView = findViewById(R.id.tv_content)
+        //textView.setText(text)
+        println(text)
+    }
+
+    private fun tellUserThatCouldntOpenFile() {
+        Toast.makeText(this, "counld not open", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun getStringFromInputStream(stream: InputStream?): String {
+            var n = 0
+            val buffer = CharArray(1024 * 4)
+            val reader = InputStreamReader(stream, "UTF8")
+            val writer = StringWriter()
+            while (-1 != reader.read(buffer).also({ n = it })) writer.write(buffer, 0, n)
+            return writer.toString()
+        }
+
+
+    //# https://developer.android.com/guide/topics/ui/settings.html?authuser=3
+
+    private fun showSettings() {
+        // show settings screen
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.include, MySettingsFragment())
+            .commit()
+
+    }
+    // create menu
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+
+    //# https://www.javatpoint.com/kotlin-android-options-menu
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                Toast.makeText(applicationContext, "click on setting", Toast.LENGTH_LONG).show()
+                true
+            }
+            R.id.action_open ->{
+                Toast.makeText(applicationContext, "click on open", Toast.LENGTH_LONG).show()
+                openFile()
+                return true
+            }
+            R.id.action_exit ->{
+                Toast.makeText(applicationContext, "click on exit", Toast.LENGTH_LONG).show()
+                moveTaskToBack(true);
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(1);
+                return true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+
+
+    fun openFile() {
+        // open a file to view
+        //val intent = Intent()
+        //    .setType("*/*")
+        //    .setAction(Intent.ACTION_GET_CONTENT)
+
+        //startForResult(Intent.createChooser(intent, "Select a file"), 111)
+
+        var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode === Activity.RESULT_OK) {
+                // There are no request codes
+                val data: Intent? = result.data
+                onActivityResult(111, result)
+            }
+        }
+
+        val intent: Intent = Intent()
+            .setType("*/*")
+            .setAction(Intent.ACTION_GET_CONTENT)
+        //val intent = Intent(this, SomeActivity::class.java)
+        resultLauncher.launch(intent)
+
+    }
+
+
 }
+
+
+//stackoverflow.com/questions/3465429/register-to-be-default-app-for-custom-file-type

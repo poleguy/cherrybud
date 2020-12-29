@@ -7,20 +7,11 @@
     tools:context=".MainActivity">
 
     <include
-        android:id="@+id/include3"
+        android:id="@+id/include"
         layout="@layout/tree_view"
-        app:layout_constraintBottom_toTopOf="@+id/include2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <!-- https://stackoverflow.com/questions/46211589/add-constraints-to-include-inside-constraintlayout -->
-    <include
-        android:id="@+id/include2"
-        layout="@layout/fragment_screen_slide_page"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

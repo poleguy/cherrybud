@@ -3,8 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.poleguy.cherrybud.MainActivity">
     <item
+        android:id="@+id/action_open"
+        android:orderInCategory="100"
+        android:title="open file"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
-        android:title="blah"
+        android:title="settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_exit"
+        android:orderInCategory="100"
+        android:title="exit"
         app:showAsAction="never" />
 </menu>
