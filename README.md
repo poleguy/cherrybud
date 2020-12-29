@@ -11,15 +11,13 @@ http://www.poleguy.com/simple.ctd
 All it does at the moment is render the name and the tree correctly.
 
 Please do initial alpha testing using this apk. Or wait for google, or build it yourself depending on your level of paranoia. :-)
-http://poleguy.com/cherrybud_v1.0.apk
+
+http://poleguy.com/cherrybud_v1.1.apk
 
 I feel google is way too slow for approval to wait on them to do alpha testing.
 
 immediate todo:
-* clean up gui (open file button)
 * open files based on extension
-* remember last loaded file 
-
 
 longer term:
 * search
