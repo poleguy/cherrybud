@@ -24,3 +24,5 @@ longer term:
 * allow editing
 * handle detecting and auto loading changes over the network
 * ctb support
+
+Developed by http://poleguy.com
