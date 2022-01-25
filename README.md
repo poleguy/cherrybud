@@ -6,13 +6,13 @@ https://github.com/giuspen/cherrytree/issues/328
 
 This currently can read simple ctd files (xml format only), e.g.
 
-http://www.poleguy.com/simple.ctd (This link must be manually copied into the browser url bar, as it is served over http, not https, sorry.)
+https://www.poleguy.com/simple.ctd 
 
 All it does at the moment is render the name and the tree correctly.
 
 Please do initial alpha testing using this apk. Or wait for google, or build it yourself depending on your level of paranoia. :-)
 
-http://poleguy.com/cherrybud_v1.1.apk (This link must be manually copied into the browser url bar, as it is served over http, not https, sorry.)
+https://poleguy.com/cherrybud_v1.1.apk
 
 I feel google is way too slow for approval to wait on them to do alpha testing.
 
@@ -25,4 +25,4 @@ longer term:
 * handle detecting and auto loading changes over the network
 * ctb support
 
-Developed by http://poleguy.com
+Developed by https://poleguy.com
